@@ -1,25 +1,71 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
 
-function App() {
+let timerID;
+
+const formatTime = (count) => {
+  let min = Math.floor((count / 1000 / 60) << 0);
+  if (min < 10) {
+    min = '0' + min;
+  };
+
+  let sec = Math.floor((count / 1000) % 60);
+  if (sec < 10) {
+    sec = '0' + sec;
+  };
+
+  return (min + ':' + sec);
+}
+
+const Timer = ({ time, step, onTick, autostart }) => {
+  const [count, setCount] = React.useState(time);
+  const [paused, setPaused] = React.useState(false);
+
+  const tik = () => {
+    setCount((prev) => prev - step)
+  }
+
+  React.useEffect(() => {
+    timerID = setInterval(tik, step)
+
+
+    return () => {
+      clearInterval(timerID)
+    }
+  }, [])
+
+  React.useEffect(() => { onTick(count) }, [count])
+
+  const clickHandler = () => {
+    if (paused) {
+      timerID = setInterval(tik, step)
+    } else {
+      clearInterval(timerID)
+    }
+
+    setPaused(!paused)
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <div>{formatTime(count)}</div>
+      <button onClick={clickHandler}>{paused ? 'Start' : 'Pause'}</button>
     </div>
-  );
+  )
+}
+
+const App = () => {
+
+  return (
+    <div>
+      <Timer
+        time={1000000}
+        step={1000}
+        onTick={(time) => console.log("Залишилось часу: " + time)}
+        autostart={true}
+      />
+
+    </div>
+  )
 }
 
 export default App;
